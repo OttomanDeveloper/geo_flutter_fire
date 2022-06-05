@@ -98,8 +98,9 @@ class BaseGeoFireCollectionRef<T> {
         field: field,
         geopointFrom: geopointFrom,
         strictMode: strictMode,
-      ).map((snapshots) =>
-          snapshots.map((snapshot) => snapshot.documentSnapshot).toList());
+      ).map((List<DistanceDocSnapshot<T>> snapshots) {
+        return snapshots.map((snapshot) => snapshot.documentSnapshot).toList();
+      });
 
   /// query firestore documents based on geographic [radius] from geoFirePoint [center]
   /// [field] specifies the name of the key in the document
