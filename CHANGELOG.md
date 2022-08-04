@@ -1,3 +1,9 @@
+## 3.0.5
+* Updated Dependencies
+
+## 3.0.4
+* Updated Dependencies
+
 ## 3.0.3
 Applied fixes and upgrades from the community ♥
 
