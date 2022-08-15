@@ -1,3 +1,6 @@
+## 3.0.6
+* Updated Dependencies
+
 ## 3.0.5
 * Updated Dependencies
 
