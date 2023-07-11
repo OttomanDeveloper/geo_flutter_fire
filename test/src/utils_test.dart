@@ -24,8 +24,8 @@ void main() {
   test('distance test', () {
     expect(
       MathUtils.kmDistance(
-        Coordinates(90, 0),
-        Coordinates(0, 90),
+        const Coordinates(90, 0),
+        const Coordinates(0, 90),
       ),
       closeTo(10001 /*km*/, 2),
     );

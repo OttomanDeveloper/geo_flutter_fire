@@ -12,7 +12,7 @@ class MathUtils {
     }
   }
 
-  var encodeAuto = 'auto';
+  final String encodeAuto = 'auto';
 
   ///
   /// Significant Figure Hash Length
@@ -25,7 +25,19 @@ class MathUtils {
   /// the geohash.
   /// @type Array
   // Desired sig figs:    0  1  2  3   4   5   6   7   8   9  10
-  var sigfigHashLength = [0, 5, 7, 8, 11, 12, 13, 15, 16, 17, 18];
+  final List<int> sigfigHashLength = <int>[
+    0,
+    5,
+    7,
+    8,
+    11,
+    12,
+    13,
+    15,
+    16,
+    17,
+    18
+  ];
 
   ///
   /// Encode
@@ -36,9 +48,9 @@ class MathUtils {
       if (latitude.runtimeType == double || longitude.runtimeType == double) {
         throw Exception('string notation required for auto precision.');
       }
-      int decSigFigsLat = latitude.split('.')[1].length;
-      int decSigFigsLon = longitude.split('.')[1].length;
-      int numberOfSigFigs = max(decSigFigsLat, decSigFigsLon);
+      final int decSigFigsLat = latitude.split('.')[1].length;
+      final int decSigFigsLon = longitude.split('.')[1].length;
+      final int numberOfSigFigs = max(decSigFigsLat, decSigFigsLon);
       numberOfChars = sigfigHashLength[numberOfSigFigs];
     } else {
       numberOfChars ??= 9;

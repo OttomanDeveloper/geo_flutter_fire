@@ -1,12 +1,15 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 import '../utils/math.dart';
 
+@immutable
 class GeoFirePoint {
   static final MathUtils _util = MathUtils();
-  double latitude, longitude;
+  final double latitude, longitude;
 
-  GeoFirePoint(this.latitude, this.longitude);
+  const GeoFirePoint(this.latitude, this.longitude);
 
   /// return geographical distance between two Co-ordinates
   static double kmDistanceBetween(
@@ -50,12 +53,29 @@ class GeoFirePoint {
   /// haversine distance between [GeoFirePoint] and ([lat], [lng])
   haversineDistance({required double lat, required double lng}) {
     return GeoFirePoint.kmDistanceBetween(
-        from: coords, to: Coordinates(lat, lng));
+      from: coords,
+      to: Coordinates(lat, lng),
+    );
   }
 }
 
+@immutable
 class Coordinates {
-  double latitude;
-  double longitude;
-  Coordinates(this.latitude, this.longitude);
+  final double latitude;
+  final double longitude;
+  const Coordinates(this.latitude, this.longitude);
+
+  @override
+  bool operator ==(covariant Coordinates other) {
+    if (identical(this, other)) return true;
+
+    return other.latitude == latitude && other.longitude == longitude;
+  }
+
+  @override
+  int get hashCode => latitude.hashCode ^ longitude.hashCode;
+
+  @override
+  String toString() =>
+      'Coordinates(latitude: $latitude, longitude: $longitude)';
 }

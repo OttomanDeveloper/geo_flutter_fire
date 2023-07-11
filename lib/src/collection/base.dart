@@ -37,7 +37,8 @@ class BaseGeoFireCollectionRef<T> {
     T data,
   ) {
     try {
-      final colRef = _collectionReference as CollectionReference<T>;
+      final CollectionReference<T> colRef =
+          _collectionReference as CollectionReference<T>;
       return colRef.add(data);
     } catch (e) {
       throw Exception(
@@ -48,7 +49,8 @@ class BaseGeoFireCollectionRef<T> {
   /// delete document with [id] from the collection
   Future<void> delete(id) {
     try {
-      CollectionReference colRef = _collectionReference as CollectionReference;
+      final CollectionReference colRef =
+          _collectionReference as CollectionReference;
       return colRef.doc(id).delete();
     } catch (e) {
       throw Exception(
@@ -59,7 +61,8 @@ class BaseGeoFireCollectionRef<T> {
   /// create or update a document with [id], [merge] defines whether the document should overwrite
   Future<void> setDoc(String id, Object? data, {bool merge = false}) {
     try {
-      CollectionReference colRef = _collectionReference as CollectionReference;
+      final CollectionReference<Object?> colRef =
+          _collectionReference as CollectionReference;
       return colRef.doc(id).set(data, SetOptions(merge: merge));
     } catch (e) {
       throw Exception(
@@ -75,8 +78,9 @@ class BaseGeoFireCollectionRef<T> {
     double longitude,
   ) {
     try {
-      CollectionReference colRef = _collectionReference as CollectionReference;
-      var point = GeoFirePoint(latitude, longitude).data;
+      final CollectionReference<Object?> colRef =
+          _collectionReference as CollectionReference;
+      final GeoFirePoint point = GeoFirePoint(latitude, longitude).data;
       return colRef.doc(id).set({field: point}, SetOptions(merge: true));
     } catch (e) {
       throw Exception(
@@ -112,36 +116,41 @@ class BaseGeoFireCollectionRef<T> {
     required GeoPoint? Function(T t) geopointFrom,
     required bool? strictMode,
   }) {
-    final nonNullStrictMode = strictMode ?? false;
+    final bool nonNullStrictMode = strictMode ?? false;
 
-    final precision = MathUtils.setPrecision(radius);
-    final centerHash = center.hash.substring(0, precision);
-    final area = GeoFirePoint.neighborsOf(hash: centerHash)..add(centerHash);
+    final int precision = MathUtils.setPrecision(radius);
+    final String centerHash = center.hash.substring(0, precision);
+    final List<String> area = GeoFirePoint.neighborsOf(hash: centerHash)
+      ..add(centerHash);
 
-    final queries = area.map((hash) {
-      final tempQuery = _queryPoint(hash, field);
+    final Iterable<Stream<List<QueryDocumentSnapshot<T>>>> queries =
+        area.map((hash) {
+      final Query<T> tempQuery = _queryPoint(hash, field);
       return _createStream(tempQuery).map((querySnapshot) {
         return querySnapshot.docs;
       });
     });
 
-    final mergedObservable = mergeObservable(queries);
+    final Stream<List<QueryDocumentSnapshot<T>>> mergedObservable =
+        mergeObservable(queries);
 
-    final filtered = mergedObservable.map((list) {
-      final mappedList = list.map((documentSnapshot) {
-        final snapData =
+    final Stream<List<DistanceDocSnapshot<T>>> filtered =
+        mergedObservable.map((list) {
+      final Iterable<DistanceDocSnapshot<T>?> mappedList =
+          list.map((documentSnapshot) {
+        final T? snapData =
             documentSnapshot.exists ? documentSnapshot.data() : null;
 
         assert(snapData != null, 'Data in one of the docs is empty');
         if (snapData == null) return null;
         // We will handle it to fail gracefully
 
-        final geoPoint = geopointFrom(snapData);
+        final GeoPoint? geoPoint = geopointFrom(snapData);
         assert(geoPoint != null, 'Couldnt find geopoint from stored data');
         if (geoPoint == null) return null;
         // We will handle it to fail gracefully
 
-        final kmDistance = center.kmDistance(
+        final double kmDistance = center.kmDistance(
           lat: geoPoint.latitude,
           lng: geoPoint.longitude,
         );
@@ -151,16 +160,18 @@ class BaseGeoFireCollectionRef<T> {
         );
       });
 
-      final nullableFilteredList = nonNullStrictMode
-          ? mappedList
-              .where((doc) =>
-                      doc != null &&
-                      doc.kmDistance <=
-                          radius * 1.02 // buffer for edge distances;
-                  )
-              .toList()
-          : mappedList.toList();
-      final filteredList = nullableFilteredList.whereNotNull().toList();
+      final List<DistanceDocSnapshot<T>?> nullableFilteredList =
+          nonNullStrictMode
+              ? mappedList
+                  .where((doc) =>
+                          doc != null &&
+                          doc.kmDistance <=
+                              radius * 1.02 // buffer for edge distances;
+                      )
+                  .toList()
+              : mappedList.toList();
+      final List<DistanceDocSnapshot<T>> filteredList =
+          nullableFilteredList.whereNotNull().toList();
 
       filteredList.sort(
         (a, b) => (a.kmDistance * 1000).toInt() - (b.kmDistance * 1000).toInt(),
@@ -173,9 +184,11 @@ class BaseGeoFireCollectionRef<T> {
   Stream<List<QueryDocumentSnapshot<T>>> mergeObservable(
     Iterable<Stream<List<QueryDocumentSnapshot<T>>>> queries,
   ) {
-    final mergedObservable = Rx.combineLatest<List<QueryDocumentSnapshot<T>>,
-        List<QueryDocumentSnapshot<T>>>(queries, (originalList) {
-      final reducedList = <QueryDocumentSnapshot<T>>[];
+    final Stream<List<QueryDocumentSnapshot<T>>> mergedObservable =
+        Rx.combineLatest<List<QueryDocumentSnapshot<T>>,
+            List<QueryDocumentSnapshot<T>>>(queries, (originalList) {
+      final List<QueryDocumentSnapshot<T>> reducedList =
+          <QueryDocumentSnapshot<T>>[];
       for (final t in originalList) {
         reducedList.addAll(t);
       }
@@ -188,8 +201,8 @@ class BaseGeoFireCollectionRef<T> {
 
   /// construct a query for the [geoHash] and [field]
   Query<T> _queryPoint(String geoHash, String field) {
-    final end = '$geoHash~';
-    final temp = _collectionReference;
+    final String end = '$geoHash~';
+    final Query<T> temp = _collectionReference;
     return temp.orderBy('$field.geohash').startAt([geoHash]).endAt([end]);
   }
 

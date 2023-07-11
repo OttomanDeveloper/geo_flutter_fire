@@ -54,7 +54,7 @@ class GeoFireCollectionRef
     required Map<String, dynamic> snapData,
   }) {
     // split and fetch geoPoint from the nested Map
-    final fieldList = field.split('.');
+    final List<String> fieldList = field.split('.');
     Map<dynamic, dynamic>? geoPointField = snapData[fieldList[0]];
     if (fieldList.length > 1) {
       for (int i = 1; i < fieldList.length; i++) {
